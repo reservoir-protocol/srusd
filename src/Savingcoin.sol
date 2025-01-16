@@ -20,22 +20,16 @@ contract Savingcoin is ERC4626 {
         uint256 timestamp
     );
 
-    uint256 public currentRate = 0.000000000000000000000000000e27;
-    // uint256 public currentRate = 0.000000004978556233936620000 * 1e27;
-    //                           0.000000000000000000000000001
-
-    //                          0.000000000000000000000000001
-
-    // 0.000000004978556233936620000
-    // 0.000000003022265993024580000
-    // 0.000000012857214404249400000
-    // 0.000000021979553066486800000
-
     uint256 public compoundFactorAccum = 1e27;
+    uint256 public currentRate = 0.000000000000000000000000000e27;
+
+    //                           0.000000000000000000000000001
+    //  17% APR                  0.000000004978556233936620000
+    //  10% APR                  0.000000003022265993024580000
+    //  50% APR                  0.000000012857214404249400000
+    // 100% APR                  0.000000021979553066486800000
 
     uint256 public lastTimestamp;
-
-    // uint256 public currentTimestamp;
 
     constructor(
         string memory name,
@@ -43,7 +37,6 @@ contract Savingcoin is ERC4626 {
         IERC20Metadata asset
     ) ERC20(name, symbol) ERC4626(asset) {
         lastTimestamp = block.timestamp;
-        // currentTimestamp = block.timestamp;
     }
 
     function _convertToShares(
@@ -63,12 +56,6 @@ contract Savingcoin is ERC4626 {
         uint256 accum = compoundFactorAccum *
             _compoundFactor(currentRate, block.timestamp, lastTimestamp);
 
-        // console.log(" + + + + + + + + + + + + + + + ");
-        // console.log(accum);
-        // console.log(uint256(1e27));
-        // console.log(accum / 1e27);
-        // console.log(" + + + + + + + + + + + + + + + ");
-
         return (shares * accum) / 1e27 / 1e27;
     }
 
@@ -85,24 +72,19 @@ contract Savingcoin is ERC4626 {
         uint256 rate,
         uint256 currentTimestamp,
         uint256 lastUpdateTimestamp
-    ) private view returns (uint256) {
+    ) private pure returns (uint256) {
         uint256 n = currentTimestamp - lastUpdateTimestamp;
 
         uint256 term1 = 1e27;
         uint256 term2 = n * rate;
 
-        // console.log(" @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ ");
-        // console.log(n);
-        // console.log(rate);
-        // console.log(" @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ ");
-
         if (n == 0) return term1 + term2;
 
-        uint256 term3 = ((n - 1) * n * rate * currentRate) / 2;
+        uint256 term3 = ((n - 1) * n * rate * rate) / 2;
 
-        // if (n == 1) return term1 + term2 + term3;
+        if (n == 1) return term1 + term2 + term3 / 1e27;
 
-        // uint256 term4 = (n * (n - 1) * (n - 2) * r ** 3) / 6;
+        // uint256 term4 = (n * (n - 1) * (n - 2) * rate ** 3) / 6;
 
         return term1 + term2 + term3 / 1e27; // return term1 + term2 + term3 + term4;
     }
@@ -116,11 +98,6 @@ contract Savingcoin is ERC4626 {
             _compoundFactor(currentRate, block.timestamp, lastTimestamp);
 
         compoundFactorAccum = accum / 1e27;
-
-        // compoundFactorAccum =
-        //     (compoundFactorAccum *
-        //         _compoundFactor(currentRate, block.timestamp, lastTimestamp)) /
-        //     1e27;
 
         emit Update(compoundFactorAccum, currentRate, rate, block.timestamp);
 

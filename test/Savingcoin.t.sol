@@ -49,6 +49,11 @@ contract SavingcoinTest is Test {
         assertEq(rusd.totalSupply(), 2_000e18);
     }
 
+    // * test different compounding
+    // * test back and forth swap in same block
+    // * ...
+    // * ...
+
     function testMint() external {
         assertEq(srusd.previewMint(12e18), 12e18);
         assertEq(srusd.previewMint(24e18), 24e18);
