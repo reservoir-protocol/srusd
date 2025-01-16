@@ -33,7 +33,7 @@ contract RateTest is Test {
         rusd.approve(address(srusd), type(uint256).max);
     }
 
-    function testInitialState() external {
+    function testInitialState() external view {
         assertEq(srusd.symbol(), "srUSD");
         assertEq(srusd.name(), "Reservoir Savingcoin");
 
@@ -42,6 +42,11 @@ contract RateTest is Test {
 
         assertEq(srusd.totalAssets(), 0);
         assertEq(srusd.totalSupply(), 0);
+
+        assertEq(srusd.compoundFactorAccum(), 1e27);
+
+        console.log(srusd.currentRate());
+        console.log(srusd.lastTimestamp());
 
         assertEq(rusd.balanceOf(eoa1), 1_000e18);
         assertEq(rusd.balanceOf(eoa2), 1_000e18);
@@ -109,15 +114,18 @@ contract RateTest is Test {
 
         // vm.roll(100);
 
+        console.log(" - - - - - - - - - - - - - - - - - ");
+        console.log(srusd.compoundFactor());
+        console.log(srusd.convertToAssets(100e18));
+
         vm.warp(31536000);
         // vm.warp(1641070800);
 
-        console.log(block.timestamp);
+        // console.log(block.timestamp);
 
         console.log(" - - - - - - - - - - - - - - - - - ");
-        // console.log(srusd.currentTimestamp());
-        // console.log(srusd.lastUpdateTimestamp());
-        console.log(srusd.convertToAssets(1));
+        console.log(srusd.compoundFactor());
+        console.log(srusd.convertToAssets(100e18));
         // console.log(uint256(1e36));
         // console.log(uint256(1e76));
         // console.log(type(uint256).max);
@@ -126,61 +134,86 @@ contract RateTest is Test {
         assertTrue(true);
     }
 
-    // function testDeposit() external {
-    //     assertEq(srusd.previewDeposit(12e18), 12e18);
-    //     assertEq(srusd.previewDeposit(24e18), 24e18);
-    //     assertEq(srusd.previewDeposit(76e18), 76e18);
-    //     assertEq(srusd.previewDeposit(88e18), 88e18);
-    //     assertEq(srusd.previewDeposit(100e18), 100e18);
+    function testDeposit() external {
+        // assertEq(srusd.previewDeposit(12e18), 12e18);
+        // assertEq(srusd.previewDeposit(24e18), 24e18);
+        // assertEq(srusd.previewDeposit(76e18), 76e18);
+        // assertEq(srusd.previewDeposit(88e18), 88e18);
+        // assertEq(srusd.previewDeposit(100e18), 100e18);
 
-    //     vm.prank(eoa1);
-    //     srusd.deposit(12e18, eoa1);
+        // vm.prank(eoa1);
+        // srusd.deposit(12e18, eoa1);
 
-    //     vm.prank(eoa2);
-    //     srusd.deposit(24e18, eoa2);
+        // vm.prank(eoa2);
+        // srusd.deposit(24e18, eoa2);
 
-    //     assertEq(srusd.balanceOf(eoa1), 12e18);
-    //     assertEq(srusd.balanceOf(eoa2), 24e18);
+        // assertEq(srusd.balanceOf(eoa1), 12e18);
+        // assertEq(srusd.balanceOf(eoa2), 24e18);
 
-    //     assertEq(srusd.totalSupply(), 36e18);
-    //     assertEq(srusd.totalAssets(), 36e18);
+        // assertEq(srusd.totalSupply(), 36e18);
+        // assertEq(srusd.totalAssets(), 36e18);
 
-    //     assertEq(srusd.previewDeposit(12e18), 12e18);
-    //     assertEq(srusd.previewDeposit(24e18), 24e18);
-    //     assertEq(srusd.previewDeposit(76e18), 76e18);
-    //     assertEq(srusd.previewDeposit(88e18), 88e18);
-    //     assertEq(srusd.previewDeposit(100e18), 100e18);
+        // assertEq(srusd.previewDeposit(12e18), 12e18);
+        // assertEq(srusd.previewDeposit(24e18), 24e18);
+        // assertEq(srusd.previewDeposit(76e18), 76e18);
+        // assertEq(srusd.previewDeposit(88e18), 88e18);
+        // assertEq(srusd.previewDeposit(100e18), 100e18);
 
-    //     vm.prank(eoa1);
-    //     srusd.deposit(76e18, eoa2);
+        // vm.prank(eoa1);
+        // srusd.deposit(76e18, eoa2);
 
-    //     vm.prank(eoa2);
-    //     srusd.deposit(100e18, eoa2);
+        // vm.prank(eoa2);
+        // srusd.deposit(100e18, eoa2);
 
-    //     assertEq(srusd.balanceOf(eoa1), 12e18);
-    //     assertEq(srusd.balanceOf(eoa2), 200e18);
+        // assertEq(srusd.balanceOf(eoa1), 12e18);
+        // assertEq(srusd.balanceOf(eoa2), 200e18);
 
-    //     assertEq(srusd.totalSupply(), 212e18);
-    //     assertEq(srusd.totalAssets(), 212e18);
+        // assertEq(srusd.totalSupply(), 212e18);
+        // assertEq(srusd.totalAssets(), 212e18);
 
-    //     assertEq(srusd.previewDeposit(12e18), 12e18);
-    //     assertEq(srusd.previewDeposit(24e18), 24e18);
-    //     assertEq(srusd.previewDeposit(76e18), 76e18);
-    //     assertEq(srusd.previewDeposit(88e18), 88e18);
-    //     assertEq(srusd.previewDeposit(100e18), 100e18);
+        // assertEq(srusd.previewDeposit(12e18), 12e18);
+        // assertEq(srusd.previewDeposit(24e18), 24e18);
+        // assertEq(srusd.previewDeposit(76e18), 76e18);
+        // assertEq(srusd.previewDeposit(88e18), 88e18);
+        // assertEq(srusd.previewDeposit(100e18), 100e18);
 
-    //     vm.prank(eoa1);
-    //     srusd.deposit(100e18, eoa1);
+        // vm.prank(eoa1);
+        // srusd.deposit(100e18, eoa1);
 
-    //     vm.prank(eoa2);
-    //     srusd.deposit(88e18, eoa1);
+        // vm.prank(eoa2);
+        // srusd.deposit(88e18, eoa1);
 
-    //     assertEq(srusd.balanceOf(eoa1), 200e18);
-    //     assertEq(srusd.balanceOf(eoa2), 200e18);
+        // assertEq(srusd.balanceOf(eoa1), 200e18);
+        // assertEq(srusd.balanceOf(eoa2), 200e18);
 
-    //     assertEq(srusd.totalSupply(), 400e18);
-    //     assertEq(srusd.totalAssets(), 400e18);
-    // }
+        // assertEq(srusd.totalSupply(), 400e18);
+        // assertEq(srusd.totalAssets(), 400e18);
+
+        // vm.roll(100);
+
+        console.log(" - - - - - - - - - - - - - - - - - ");
+        console.log(srusd.compoundFactor());
+        console.log(srusd.convertToShares(100e18));
+        console.log(srusd.convertToAssets(100e18));
+
+        vm.warp(31536000);
+        // vm.warp(1641070800);
+
+        // console.log(block.timestamp);
+
+        console.log(" - - - - - - - - - - - - - - - - - ");
+        console.log(srusd.compoundFactor());
+        console.log(srusd.convertToShares(100e18));
+        console.log(srusd.convertToAssets(100e18));
+        // console.log(uint256(1e36));
+        // console.log(uint256(1e76));
+        // console.log(type(uint256).max);
+        console.log(" - - - - - - - - - - - - - - - - - ");
+        console.log(srusd.convertToAssets(srusd.convertToShares(100e18)));
+        console.log(uint256(100e18));
+
+        assertTrue(true);
+    }
 
     // function testWithdraw() external {
     //     vm.prank(eoa1);

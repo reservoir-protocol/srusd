@@ -13,64 +13,74 @@ import {Math} from "openzeppelin-contracts/contracts/utils/math/Math.sol";
 import {console} from "forge-std/console.sol";
 
 contract Savingcoin is ERC4626 {
-    uint256 public rate = 0.000000004978556233936620000 * 1e27;
-    //                    0.000000000000000000000000001
+    uint256 public currentRate = 0.000000004978556233936620000 * 1e27;
+    //                           0.000000000000000000000000001
 
-    uint256 public lastUpdateTimestamp;
-    uint256 public currentTimestamp;
+    // 0.000000000000000000000000001
+
+    // 0.000000004978556233936620000
+    // 0.000000003022265993024580000
+    // 0.000000012857214404249400000
+    // 0.000000021979553066486800000
+
+    uint256 public compoundFactorAccum = 1e27;
+
+    uint256 public lastTimestamp;
+
+    // uint256 public currentTimestamp;
 
     constructor(
         string memory name,
         string memory symbol,
         IERC20Metadata asset
     ) ERC20(name, symbol) ERC4626(asset) {
-        lastUpdateTimestamp = block.timestamp;
-        currentTimestamp = block.timestamp;
+        lastTimestamp = block.timestamp;
+        // currentTimestamp = block.timestamp;
+    }
+
+    function _convertToShares(
+        uint256 assets,
+        Math.Rounding rounding
+    ) internal view override returns (uint256) {
+        return
+            (1e27 * assets) /
+            (_compoundFactor(currentRate, block.timestamp, lastTimestamp));
     }
 
     function _convertToAssets(
         uint256 shares,
         Math.Rounding rounding
     ) internal view override returns (uint256) {
-        // uint256 exp = lastUpdateTimestamp - currentTimestamp;
-        uint256 exp = block.timestamp - lastUpdateTimestamp;
+        return
+            (shares *
+                _compoundFactor(currentRate, block.timestamp, lastTimestamp)) /
+            1e27;
+    }
 
-        uint256 ratePerSecond = rate;
-        // uint256 ratePerSecond = rate / 31536000;
+    /// @notice Compound factor calculation based on the initial time stamp
+    /// @return uint256 Current compound factor
+    function compoundFactor() external view returns (uint256) {
+        return _compoundFactor(currentRate, block.timestamp, lastTimestamp);
+    }
 
-        // uint256 n = daysCount;
-        // uint256 r = discountRate;
-
-        console.log(ratePerSecond);
+    function _compoundFactor(
+        uint256 rate,
+        uint256 currentTimestamp,
+        uint256 lastUpdateTimestamp
+    ) private view returns (uint256) {
+        uint256 n = currentTimestamp - lastUpdateTimestamp;
 
         uint256 term1 = 1e27;
-        // uint256 term2 = (ratePerSecond * exp) / 1e27;
-        uint256 term2 = ratePerSecond * exp;
+        uint256 term2 = n * rate;
 
-        console.log(term2);
+        if (n == 0) return term1 + term2;
 
-        // console.log(exp);
-        // console.log(exp - 1);
-        // console.log(ratePerSecond);
-
-        // uint256 term3 = ((exp - 1) * exp * ratePerSecond * ratePerSecond) /
-        //     (2 * 1e27);
-
-        uint256 term3 = ((exp - 1) * exp * ratePerSecond * ratePerSecond) / 2;
-
-        // if (n == 0) return term1 + term2;
-
-        // uint256 term3 = (1e12 * (n * (n - 1) * r ** 2)) / 2;
+        uint256 term3 = ((n - 1) * n * rate * currentRate) / 2;
 
         // if (n == 1) return term1 + term2 + term3;
 
         // uint256 term4 = (n * (n - 1) * (n - 2) * r ** 3) / 6;
 
-        // return term1 + term2 + term3 + term4;
-
-        // return term1 + term2 + term3;
-
-        // return term1 + term2 + term3 / (1e27 * 1e27);
-        return term1 + term2 + term3 / 1e27;
+        return term1 + term2 + term3 / 1e27; // return term1 + term2 + term3 + term4;
     }
 }
