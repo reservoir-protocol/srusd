@@ -13,10 +13,18 @@ import {Math} from "openzeppelin-contracts/contracts/utils/math/Math.sol";
 import {console} from "forge-std/console.sol";
 
 contract Savingcoin is ERC4626 {
-    uint256 public currentRate = 0.000000004978556233936620000 * 1e27;
+    event Update(
+        uint256 compoundFactorAccum,
+        uint256 currentRate,
+        uint256 rate,
+        uint256 timestamp
+    );
+
+    uint256 public currentRate = 0.000000000000000000000000000e27;
+    // uint256 public currentRate = 0.000000004978556233936620000 * 1e27;
     //                           0.000000000000000000000000001
 
-    // 0.000000000000000000000000001
+    //                          0.000000000000000000000000001
 
     // 0.000000004978556233936620000
     // 0.000000003022265993024580000
@@ -42,25 +50,35 @@ contract Savingcoin is ERC4626 {
         uint256 assets,
         Math.Rounding rounding
     ) internal view override returns (uint256) {
-        return
-            (1e27 * assets) /
-            (_compoundFactor(currentRate, block.timestamp, lastTimestamp));
+        uint256 accum = compoundFactorAccum *
+            _compoundFactor(currentRate, block.timestamp, lastTimestamp);
+
+        return (1e27 * 1e27 * assets) / accum;
     }
 
     function _convertToAssets(
         uint256 shares,
         Math.Rounding rounding
     ) internal view override returns (uint256) {
-        return
-            (shares *
-                _compoundFactor(currentRate, block.timestamp, lastTimestamp)) /
-            1e27;
+        uint256 accum = compoundFactorAccum *
+            _compoundFactor(currentRate, block.timestamp, lastTimestamp);
+
+        // console.log(" + + + + + + + + + + + + + + + ");
+        // console.log(accum);
+        // console.log(uint256(1e27));
+        // console.log(accum / 1e27);
+        // console.log(" + + + + + + + + + + + + + + + ");
+
+        return (shares * accum) / 1e27 / 1e27;
     }
 
     /// @notice Compound factor calculation based on the initial time stamp
     /// @return uint256 Current compound factor
     function compoundFactor() external view returns (uint256) {
-        return _compoundFactor(currentRate, block.timestamp, lastTimestamp);
+        uint256 accum = compoundFactorAccum *
+            _compoundFactor(currentRate, block.timestamp, lastTimestamp);
+
+        return accum / 1e27;
     }
 
     function _compoundFactor(
@@ -73,6 +91,11 @@ contract Savingcoin is ERC4626 {
         uint256 term1 = 1e27;
         uint256 term2 = n * rate;
 
+        // console.log(" @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ ");
+        // console.log(n);
+        // console.log(rate);
+        // console.log(" @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ ");
+
         if (n == 0) return term1 + term2;
 
         uint256 term3 = ((n - 1) * n * rate * currentRate) / 2;
@@ -82,5 +105,26 @@ contract Savingcoin is ERC4626 {
         // uint256 term4 = (n * (n - 1) * (n - 2) * r ** 3) / 6;
 
         return term1 + term2 + term3 / 1e27; // return term1 + term2 + term3 + term4;
+    }
+
+    /// @notice Set the interest for srUSD
+    /// @param rate New value for the interest rate
+    function update(uint256 rate) external {
+        require(1e27 > rate, "SM: Savings rate can not be above 100% per anum");
+
+        uint256 accum = compoundFactorAccum *
+            _compoundFactor(currentRate, block.timestamp, lastTimestamp);
+
+        compoundFactorAccum = accum / 1e27;
+
+        // compoundFactorAccum =
+        //     (compoundFactorAccum *
+        //         _compoundFactor(currentRate, block.timestamp, lastTimestamp)) /
+        //     1e27;
+
+        emit Update(compoundFactorAccum, currentRate, rate, block.timestamp);
+
+        currentRate = rate;
+        lastTimestamp = block.timestamp;
     }
 }
