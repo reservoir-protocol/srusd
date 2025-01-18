@@ -482,7 +482,21 @@ contract SavingcoinTest is Test {
     }
 
     function testCompounding5() external {
+        address eoa3 = vm.addr(3);
+
+        vm.prank(eoa3);
+        rusd.approve(address(srusd), type(uint256).max);
+
+        rusd.mint(eoa3, 1_000_000_000e18);
+
+        console.log(srusd.previewDeposit(100_000e18));
         // TODO: Check with 3 different rates 6 months apart
+
+        vm.prank(eoa3);
+        srusd.deposit(1_000_000_000e18, eoa1);
+
+        console.log(rusd.balanceOf(eoa3));
+        console.log(srusd.balanceOf(eoa1));
 
         // console.log(srusd.compoundFactor());
         // console.log(srusd.previewMint(100e18));

@@ -41,17 +41,17 @@ contract Savingcoin is ERC4626 {
 
     function _convertToShares(
         uint256 assets,
-        Math.Rounding rounding
+        Math.Rounding // Math.Rounding rounding
     ) internal view override returns (uint256) {
         uint256 accum = compoundFactorAccum *
             _compoundFactor(currentRate, block.timestamp, lastTimestamp);
 
-        return (1e27 * 1e27 * assets) / accum;
+        return (assets * 1e27) / (accum / 1e27);
     }
 
     function _convertToAssets(
         uint256 shares,
-        Math.Rounding rounding
+        Math.Rounding // Math.Rounding rounding
     ) internal view override returns (uint256) {
         uint256 accum = compoundFactorAccum *
             _compoundFactor(currentRate, block.timestamp, lastTimestamp);

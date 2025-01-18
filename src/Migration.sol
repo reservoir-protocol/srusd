@@ -13,29 +13,58 @@ import {Math} from "openzeppelin-contracts/contracts/utils/math/Math.sol";
 
 import {console} from "forge-std/console.sol";
 
-contract Migration {
+interface ISavingModule {
+    function redeem(uint256) external;
 
-    IERC20 asset;
-    IERC4626 vault;
-    
-    IERC20 token;
+    function currentPrice() external view returns (uint256);
+}
+
+contract Migration {
+    IERC20 public rusd;
+    IERC20 public srusd;
+
+    IERC4626 public vault;
+
+    ISavingModule public savingModule;
 
     constructor(
+        address rusd_,
+        address srusd_,
         address vault_,
-        address token_
+        address savingModule_
     ) {
+        rusd = IERC20(rusd_);
+        srusd = IERC20(srusd_);
+
         vault = IERC4626(vault_);
 
-        token = IERC20(token_);
+        savingModule = ISavingModule(savingModule_);
+
+        rusd.approve(vault_, type(uint256).max);
     }
 
-    // function migrate(uint256 amount) external {
-    //     require(token.transferFrom(msg.sender, address(this), amount), "transfer failed");
-        
-    //     // redeem srusd against saving module
+    function migrate(uint256 amount) external returns (uint256) {
+        require(
+            srusd.transferFrom(msg.sender, address(this), amount),
+            "transfer failed"
+        );
 
-    //     uint256 shares = vault.deposit( , msg.sender); // return the shares
+        uint256 balanceBefore = rusd.balanceOf(address(this));
 
-    //     // ????
-    // }
+        savingModule.redeem((amount * savingModule.currentPrice()) / 1e8);
+
+        uint256 balanceAfter = rusd.balanceOf(address(this));
+
+        // console.log(" + + + + + + + + + + + + + + + + + + + + + + ");
+        // console.log(balanceBefore);
+        // console.log(balanceAfter);
+
+        uint256 balance = balanceAfter - balanceBefore;
+
+        // console.log(balance);
+        // console.log(" + + + + + + + + + + + + + + + + + + + + + + ");
+
+        // return vault.deposit(balance, msg.sender);
+        return vault.deposit(balance, msg.sender);
+    }
 }
