@@ -56,7 +56,7 @@ contract Savingcoin is ERC4626 {
         uint256 accum = compoundFactorAccum *
             _compoundFactor(currentRate, block.timestamp, lastTimestamp);
 
-        return (shares * accum) / 1e27 / 1e27;
+        return (shares * (accum / 1e27)) / 1e27;
     }
 
     /// @notice Compound factor calculation based on the initial time stamp
