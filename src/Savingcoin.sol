@@ -1,4 +1,5 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: MIT
+
 pragma solidity ^0.8.13;
 
 import {IERC1155} from "openzeppelin-contracts/contracts/token/ERC1155/IERC1155.sol";
@@ -16,6 +17,8 @@ import {console} from "forge-std/console.sol";
 
 interface IStablecoin {
     function mint(address, uint256) external;
+
+    function burnFrom(address, uint256) external;
 }
 
 contract Savingcoin is ERC4626 {
@@ -47,6 +50,8 @@ contract Savingcoin is ERC4626 {
         lastTimestamp = block.timestamp;
     }
 
+    /// @notice Conversion method from assets to shares
+    /// @param assets Number of asset tokens being burned
     function _convertToShares(
         uint256 assets,
         Math.Rounding // Math.Rounding rounding
@@ -57,6 +62,8 @@ contract Savingcoin is ERC4626 {
         return (assets * 1e27) / (accum / 1e27);
     }
 
+    /// @notice Conversion method from shares to assets
+    /// @param shares Number of tokens to burn
     function _convertToAssets(
         uint256 shares,
         Math.Rounding // Math.Rounding rounding
@@ -105,40 +112,42 @@ contract Savingcoin is ERC4626 {
         return term1 + term2 + term3 + term4;
     }
 
-    // function _deposit(
-    //     address caller,
-    //     address receiver,
-    //     uint256 assets,
-    //     uint256 shares
-    // ) internal override {
-    //     // TODO: Check cap against max
+    function _deposit(
+        address caller,
+        address receiver,
+        uint256 assets,
+        uint256 shares
+    ) internal override {
+        // TODO: Check cap against max
 
-    //     ERC20Burnable(asset()).burnFrom(caller, assets);
-    //     _mint(receiver, shares);
+        // ERC20Burnable(asset()).burnFrom(caller, assets);
+        IStablecoin(asset()).burnFrom(caller, assets);
 
-    //     emit Deposit(caller, receiver, assets, shares);
-    // }
+        _mint(receiver, shares);
 
-    // function _withdraw(
-    //     address caller,
-    //     address receiver,
-    //     address owner,
-    //     uint256 assets,
-    //     uint256 shares
-    // ) internal override {
-    //     if (caller != owner) {
-    //         _spendAllowance(owner, caller, shares);
-    //     }
+        emit Deposit(caller, receiver, assets, shares);
+    }
 
-    //     _burn(owner, shares);
-    //     IStablecoin(asset()).mint(receiver, assets);
+    function _withdraw(
+        address caller,
+        address receiver,
+        address owner,
+        uint256 assets,
+        uint256 shares
+    ) internal override {
+        if (caller != owner) {
+            _spendAllowance(owner, caller, shares);
+        }
 
-    //     emit Withdraw(caller, receiver, owner, assets, shares);
-    // }
+        _burn(owner, shares);
+        IStablecoin(asset()).mint(receiver, assets);
 
-    // function totalAssets() public view override returns (uint256) {
-    //     return _convertToAssets(totalSupply(), Math.Rounding.Floor);
-    // }
+        emit Withdraw(caller, receiver, owner, assets, shares);
+    }
+
+    function totalAssets() public view override returns (uint256) {
+        return _convertToAssets(totalSupply(), Math.Rounding.Floor);
+    }
 
     function setCap(uint256 cap_) external {
         cap = cap_;

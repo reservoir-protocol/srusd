@@ -24,7 +24,6 @@ contract Migration {
     IERC20 public srusd;
 
     IERC4626 public vault;
-
     ISavingModule public savingModule;
 
     constructor(
@@ -37,7 +36,6 @@ contract Migration {
         srusd = IERC20(srusd_);
 
         vault = IERC4626(vault_);
-
         savingModule = ISavingModule(savingModule_);
 
         rusd.approve(vault_, type(uint256).max);
@@ -55,16 +53,9 @@ contract Migration {
 
         uint256 balanceAfter = rusd.balanceOf(address(this));
 
-        // console.log(" + + + + + + + + + + + + + + + + + + + + + + ");
-        // console.log(balanceBefore);
-        // console.log(balanceAfter);
-
+        // Should be same as amount
         uint256 balance = balanceAfter - balanceBefore;
 
-        // console.log(balance);
-        // console.log(" + + + + + + + + + + + + + + + + + + + + + + ");
-
-        // return vault.deposit(balance, msg.sender);
         return vault.deposit(balance, msg.sender);
     }
 }

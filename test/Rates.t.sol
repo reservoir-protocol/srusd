@@ -2,6 +2,9 @@
 
 pragma solidity ^0.8.24;
 
+import {ERC20} from "openzeppelin-contracts/contracts/token/ERC20/ERC20.sol";
+import {ERC20Burnable} from "openzeppelin-contracts/contracts/token/ERC20/extensions/ERC20Burnable.sol";
+
 import {ERC20Mock} from "openzeppelin-contracts/contracts/mocks/token/ERC20Mock.sol";
 
 import {Savingcoin} from "src/Savingcoin.sol";
@@ -9,8 +12,17 @@ import {Savingcoin} from "src/Savingcoin.sol";
 import {Test} from "forge-std/Test.sol";
 import {console} from "forge-std/console.sol";
 
+contract StablecoinMock is ERC20Burnable {
+    constructor(string memory name, string memory symbol) ERC20(name, symbol) {}
+
+    function mint(address account, uint256 amount) external {
+        _mint(account, amount);
+    }
+}
+
 contract RatesTest is Test {
-    ERC20Mock rusd;
+    // ERC20Mock rusd;
+    StablecoinMock rusd;
 
     Savingcoin srusd;
 
@@ -18,7 +30,8 @@ contract RatesTest is Test {
     address eoa2 = vm.addr(2);
 
     function setUp() external {
-        rusd = new ERC20Mock();
+        // rusd = new ERC20Mock();
+        rusd = new StablecoinMock("Reservoir Stablecoin Mock", "rUSDM");
         srusd = new Savingcoin("Reservoir Savingcoin", "srUSD", rusd);
 
         // rusd.grantRole(rusd.MINTER(), address(this));
@@ -104,7 +117,7 @@ contract RatesTest is Test {
             srusd.totalSupply(),
             srusd.balanceOf(eoa2) + srusd.balanceOf(eoa2)
         );
-        assertEq(srusd.totalAssets(), 400e18);
+        assertEq(srusd.totalAssets(), 499.755189243089328934e18);
 
         srusd.update(0.000000021979553066486800000e27);
 
@@ -138,7 +151,7 @@ contract RatesTest is Test {
             srusd.totalSupply(),
             srusd.balanceOf(eoa2) + srusd.balanceOf(eoa2)
         );
-        assertEq(srusd.totalAssets(), 600e18);
+        assertEq(srusd.totalAssets(), 1193.951997745162618034e18);
     }
 
     function testMint() external {
@@ -187,10 +200,7 @@ contract RatesTest is Test {
         assertEq(srusd.balanceOf(eoa2), 200e18);
 
         assertEq(srusd.totalSupply(), 400e18);
-        assertEq(
-            srusd.totalAssets(),
-            2_000_000e18 - rusd.balanceOf(eoa1) - rusd.balanceOf(eoa2)
-        );
+        assertEq(srusd.totalAssets(), 467.989544063355791332e18);
 
         srusd.update(0.000000003022265993024580000e27);
 
@@ -220,10 +230,7 @@ contract RatesTest is Test {
         assertEq(srusd.balanceOf(eoa2), 300e18);
 
         assertEq(srusd.totalSupply(), 600e18);
-        assertEq(
-            srusd.totalAssets(),
-            2_000_000e18 - rusd.balanceOf(eoa1) - rusd.balanceOf(eoa2)
-        );
+        assertEq(srusd.totalAssets(), 772.180287625029361776e18);
     }
 
     function testWithdraw() external {
@@ -275,7 +282,7 @@ contract RatesTest is Test {
             srusd.totalSupply(),
             srusd.balanceOf(eoa2) + srusd.balanceOf(eoa2)
         );
-        assertEq(srusd.totalAssets(), 600e18);
+        assertEq(srusd.totalAssets(), 999.020756972357315753e18);
 
         srusd.update(0.000000021979553066486800000e27);
 
@@ -289,7 +296,7 @@ contract RatesTest is Test {
         vm.warp(2 * 365 days);
 
         assertEq(srusd.compoundFactor(), 2.980882195879748914500237647e27);
-        assertEq(srusd.compoundFactorAccum(),1.498775946215446644688504438e27);
+        assertEq(srusd.compoundFactorAccum(), 1.498775946215446644688504438e27);
 
         assertEq(srusd.previewWithdraw(100e18), 33.547115729102793796e18);
 
@@ -309,7 +316,7 @@ contract RatesTest is Test {
             srusd.totalSupply(),
             srusd.balanceOf(eoa2) + srusd.balanceOf(eoa2)
         );
-        assertEq(srusd.totalAssets(), 400e18);
+        assertEq(srusd.totalAssets(), 1786.930198134586296465e18);
     }
 
     function testRedeem() external {
@@ -358,10 +365,7 @@ contract RatesTest is Test {
         assertEq(srusd.balanceOf(eoa2), 300e18);
 
         assertEq(srusd.totalSupply(), 600e18);
-        assertEq(
-            srusd.totalAssets(),
-            2_000_000e18 - rusd.balanceOf(eoa1) - rusd.balanceOf(eoa2)
-        );
+        assertEq(srusd.totalAssets(), 701.984316095033686999e18);
 
         srusd.update(0.000000003022265993024580000e27);
 
@@ -391,9 +395,6 @@ contract RatesTest is Test {
         assertEq(srusd.balanceOf(eoa2), 200e18);
 
         assertEq(srusd.totalSupply(), 400e18);
-        assertEq(
-            srusd.totalAssets(),
-            2_000_000e18 - rusd.balanceOf(eoa1) - rusd.balanceOf(eoa2)
-        );
+        assertEq(srusd.totalAssets(), 514.786858416686241184e18);
     }
 }

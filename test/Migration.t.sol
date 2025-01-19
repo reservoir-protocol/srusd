@@ -2,6 +2,9 @@
 
 pragma solidity ^0.8.24;
 
+import {ERC20} from "openzeppelin-contracts/contracts/token/ERC20/ERC20.sol";
+import {ERC20Burnable} from "openzeppelin-contracts/contracts/token/ERC20/extensions/ERC20Burnable.sol";
+
 import {ERC20Mock} from "openzeppelin-contracts/contracts/mocks/token/ERC20Mock.sol";
 
 import {Savingcoin} from "src/Savingcoin.sol";
@@ -13,6 +16,14 @@ import {console} from "forge-std/console.sol";
 
 interface IStablecoin {
     function mint(address, uint256) external;
+}
+
+contract StablecoinMock is ERC20Burnable {
+    constructor(string memory name, string memory symbol) ERC20(name, symbol) {}
+
+    function mint(address account, uint256 amount) external {
+        _mint(account, amount);
+    }
 }
 
 contract SavingModuleMock {
@@ -36,7 +47,9 @@ contract SavingModuleMock {
 }
 
 contract MigrationTest is Test {
-    ERC20Mock rusd;
+    // ERC20Mock rusd;
+    StablecoinMock rusd;
+
     ERC20Mock srusd;
 
     SavingModuleMock savingModule;
@@ -48,7 +61,8 @@ contract MigrationTest is Test {
     address eoa2 = vm.addr(2);
 
     function setUp() external {
-        rusd = new ERC20Mock();
+        // rusd = new ERC20Mock();
+        rusd = new StablecoinMock("Reservoir Stablecoin Mock", "rUSDM");
         srusd = new ERC20Mock();
 
         savingModule = new SavingModuleMock(address(rusd));
