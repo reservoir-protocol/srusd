@@ -101,16 +101,16 @@ contract MigrationTest is Test {
 
         skip(365 days);
 
-        assertEq(vault.compoundFactor(), 1.099852195451745627479632852e27);
+        assertEq(vault.compoundFactor(), 1.099996495534941038654051027e27);
         assertEq(vault.compoundFactorAccum(), 1.000000000000000000000000000e27);
 
         assertEq(
             vault.previewDeposit(1_000_000e18),
-            909_213.078025695050374104e18
+            909_093.805352251068337179e18
         );
         assertEq(
             vault.previewDeposit(1_500_000e18),
-            1_363_819.617038542575561156e18
+            1_363_640.708028376602505769e18
         );
 
         uint256 balance = srusd.balanceOf(eoa1);
@@ -118,18 +118,24 @@ contract MigrationTest is Test {
         vm.prank(eoa1);
         shares = migration.migrate(balance);
 
-        assertEq(shares, 1_363_819.617038542575561156e18);
-        assertEq(vault.balanceOf(eoa1), 2_363_819.617038542575561156e18);
+        assertEq(shares, 1_363_640.708028376602505769e18);
+        assertEq(vault.balanceOf(eoa1), 2_363_640.708028376602505769e18);
 
         vault.update(0.000000012857214404249400000e27);
 
         skip(365 days);
 
-        assertEq(vault.compoundFactor(), 1.636212815140872887708016220e27);
-        assertEq(vault.compoundFactorAccum(), 1.099852195451745627479632852e27);
+        assertEq(vault.compoundFactor(), 1.648648309468955367634227975e27);
+        assertEq(vault.compoundFactorAccum(), 1.099996495534941038654051027e27);
 
-        assertEq(vault.previewDeposit(1_000_000e18), 611_167.441512736885416082e18);
-        assertEq(vault.previewDeposit(2_000_000e18), 1_222_334.883025473770832164e18);
+        assertEq(
+            vault.previewDeposit(1_000_000e18),
+            606_557.501837434998839723e18
+        );
+        assertEq(
+            vault.previewDeposit(2_000_000e18),
+            1_213_115.003674869997679446e18
+        );
 
         balance = srusd.balanceOf(eoa2);
         savingModule.setCurrentPrice(2.00000000e8);
@@ -137,8 +143,8 @@ contract MigrationTest is Test {
         vm.prank(eoa2);
         shares = migration.migrate(balance);
 
-        assertEq(shares, 1_222_334.883025473770832164e18);
-        assertEq(vault.balanceOf(eoa2), 2_722_334.883025473770832164e18);
+        assertEq(shares, 1_213_115.003674869997679446e18);
+        assertEq(vault.balanceOf(eoa2), 2_713_115.003674869997679446e18);
 
         assertEq(srusd.balanceOf(eoa1), 0);
         assertEq(srusd.balanceOf(eoa2), 0);

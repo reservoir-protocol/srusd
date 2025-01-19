@@ -81,6 +81,8 @@ contract Savingcoin is ERC4626 {
         uint256 currentTimestamp,
         uint256 lastUpdateTimestamp
     ) private pure returns (uint256) {
+        // https://github.com/aave/protocol-v2/blob/master/contracts/protocol/libraries/math/MathUtils.sol#L45
+
         uint256 n = currentTimestamp - lastUpdateTimestamp;
 
         uint256 term1 = 1e27;
@@ -88,13 +90,19 @@ contract Savingcoin is ERC4626 {
 
         if (n == 0) return term1 + term2;
 
-        uint256 term3 = ((n - 1) * n * rate * rate) / 2;
+        uint256 term3 = ((n - 1) * n * ((rate * rate) / 1e27)) / 2;
 
-        if (n == 1) return term1 + term2 + term3 / 1e27;
+        if (n == 1) return term1 + term2 + term3;
 
-        // uint256 term4 = (n * (n - 1) * (n - 2) * rate ** 3) / 6;
+        uint256 term4 = (n *
+            (n - 1) *
+            (n - 2) *
+            ((rate * rate) / 1e27) *
+            rate) /
+            1e27 /
+            6;
 
-        return term1 + term2 + term3 / 1e27; // return term1 + term2 + term3 + term4;
+        return term1 + term2 + term3 + term4;
     }
 
     // function _deposit(

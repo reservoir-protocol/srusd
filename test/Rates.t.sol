@@ -57,10 +57,6 @@ contract RatesTest is Test {
 
     function testDeposit() external {
         assertEq(srusd.previewDeposit(100e18), 100e18);
-        // assertEq(srusd.previewMint(24e18), 24e18);
-        // assertEq(srusd.previewMint(76e18), 76e18);
-        // assertEq(srusd.previewMint(88e18), 88e18);
-        // assertEq(srusd.previewMint(100e18), 100e18);
 
         vm.prank(eoa1);
         srusd.deposit(100e18, eoa1);
@@ -87,14 +83,10 @@ contract RatesTest is Test {
 
         vm.warp(365 days);
 
-        assertEq(srusd.compoundFactor(), 1.487666071888954476505184327e27);
+        assertEq(srusd.compoundFactor(), 1.498775946215446644688504438e27);
         assertEq(srusd.compoundFactorAccum(), 1e27);
 
-        assertEq(srusd.previewDeposit(100e18), 67.219386050140701140e18);
-        // assertEq(srusd.previewMint(24e18), 24e18);
-        // assertEq(srusd.previewMint(76e18), 76e18);
-        // assertEq(srusd.previewMint(88e18), 88e18);
-        // assertEq(srusd.previewMint(100e18), 100e18);
+        assertEq(srusd.previewDeposit(100e18), 66.721113487649447483e18);
 
         vm.prank(eoa1);
         srusd.deposit(100e18, eoa2);
@@ -105,8 +97,8 @@ contract RatesTest is Test {
         assertEq(rusd.balanceOf(eoa1), 1_000_000e18 - 200e18);
         assertEq(rusd.balanceOf(eoa2), 1_000_000e18 - 200e18);
 
-        assertEq(srusd.balanceOf(eoa1), 167.219386050140701140e18);
-        assertEq(srusd.balanceOf(eoa2), 167.219386050140701140e18);
+        assertEq(srusd.balanceOf(eoa1), 166.721113487649447483e18);
+        assertEq(srusd.balanceOf(eoa2), 166.721113487649447483e18);
 
         assertEq(
             srusd.totalSupply(),
@@ -120,20 +112,15 @@ contract RatesTest is Test {
 
         assertEq(srusd.currentRate(), 0.000000021979553066486800000e27);
 
-        assertEq(srusd.compoundFactor(), 1.487666071888954476505184327e27);
-        assertEq(srusd.compoundFactorAccum(), 1.487666071888954476505184327e27);
+        assertEq(srusd.compoundFactor(), 1.498775946215446644688504438e27);
+        assertEq(srusd.compoundFactorAccum(), 1.498775946215446644688504438e27);
 
         vm.warp(2 * 365 days);
 
-        assertEq(srusd.compoundFactor(), 2.876214440327681182683276709e27);
-        assertEq(srusd.compoundFactorAccum(), 1.487666071888954476505184327e27);
+        assertEq(srusd.compoundFactor(), 2.980882195879748914500237647e27);
+        assertEq(srusd.compoundFactorAccum(), 1.498775946215446644688504438e27);
 
-        assertEq(srusd.previewDeposit(100e18), 34.767922237608683350e18);
-        // assertEq(srusd.previewMint(100e18), 12e18);
-        // assertEq(srusd.previewMint(24e18), 24e18);
-        // assertEq(srusd.previewMint(76e18), 76e18);
-        // assertEq(srusd.previewMint(88e18), 88e18);
-        // assertEq(srusd.previewMint(100e18), 100e18);
+        assertEq(srusd.previewDeposit(100e18), 33.547115729102793796e18);
 
         vm.prank(eoa1);
         srusd.deposit(100e18, eoa1);
@@ -144,8 +131,8 @@ contract RatesTest is Test {
         assertEq(rusd.balanceOf(eoa1), 1_000_000e18 - 300e18);
         assertEq(rusd.balanceOf(eoa2), 1_000_000e18 - 300e18);
 
-        assertEq(srusd.balanceOf(eoa1), 201.987308287749384490e18);
-        assertEq(srusd.balanceOf(eoa2), 201.987308287749384490e18);
+        assertEq(srusd.balanceOf(eoa1), 200.268229216752241279e18);
+        assertEq(srusd.balanceOf(eoa2), 200.268229216752241279e18);
 
         assertEq(
             srusd.totalSupply(),
@@ -156,10 +143,6 @@ contract RatesTest is Test {
 
     function testMint() external {
         assertEq(srusd.previewMint(100e18), 100e18);
-        // assertEq(srusd.previewMint(24e18), 24e18);
-        // assertEq(srusd.previewMint(76e18), 76e18);
-        // assertEq(srusd.previewMint(88e18), 88e18);
-        // assertEq(srusd.previewMint(100e18), 100e18);
 
         vm.prank(eoa1);
         srusd.mint(100e18, eoa1);
@@ -186,14 +169,10 @@ contract RatesTest is Test {
 
         vm.warp(365 days);
 
-        assertEq(srusd.compoundFactor(), 1.169328831904187785743199702e27);
+        assertEq(srusd.compoundFactor(), 1.169973860158389478332097594e27);
         assertEq(srusd.compoundFactorAccum(), 1e27);
 
-        assertEq(srusd.previewMint(100e18), 116.932883190418778574e18);
-        // assertEq(srusd.previewMint(24e18), 24e18);
-        // assertEq(srusd.previewMint(76e18), 76e18);
-        // assertEq(srusd.previewMint(88e18), 88e18);
-        // assertEq(srusd.previewMint(100e18), 100e18);
+        assertEq(srusd.previewMint(100e18), 116.997386015838947833e18);
 
         vm.prank(eoa1);
         srusd.mint(100e18, eoa2);
@@ -201,8 +180,8 @@ contract RatesTest is Test {
         vm.prank(eoa2);
         srusd.mint(100e18, eoa1);
 
-        assertEq(rusd.balanceOf(eoa1), 999_783.067116809581221426e18);
-        assertEq(rusd.balanceOf(eoa2), 999_783.067116809581221426e18);
+        assertEq(rusd.balanceOf(eoa1), 999_783.002613984161052167e18);
+        assertEq(rusd.balanceOf(eoa2), 999_783.002613984161052167e18);
 
         assertEq(srusd.balanceOf(eoa1), 200e18);
         assertEq(srusd.balanceOf(eoa2), 200e18);
@@ -218,20 +197,15 @@ contract RatesTest is Test {
         assertEq(srusd.lastTimestamp(), 365 days);
 
         assertEq(srusd.currentRate(), 0.000000003022265993024580000e27);
-        assertEq(srusd.compoundFactor(), 1.169328831904187785743199702e27);
-        assertEq(srusd.compoundFactorAccum(), 1.169328831904187785743199702e27);
+        assertEq(srusd.compoundFactor(), 1.169973860158389478332097594e27);
+        assertEq(srusd.compoundFactorAccum(), 1.169973860158389478332097594e27);
 
         vm.warp(2 * 365 days);
 
-        assertEq(srusd.compoundFactor(), 1.286088882974846152740431336e27);
-        assertEq(srusd.compoundFactorAccum(), 1.169328831904187785743199702e27);
+        assertEq(srusd.compoundFactor(), 1.286967146041715602961404116e27);
+        assertEq(srusd.compoundFactorAccum(), 1.169973860158389478332097594e27);
 
-        assertEq(srusd.previewMint(100e18), 128.608888297484615274e18);
-        // assertEq(srusd.previewMint(100e18), 12e18);
-        // assertEq(srusd.previewMint(24e18), 24e18);
-        // assertEq(srusd.previewMint(76e18), 76e18);
-        // assertEq(srusd.previewMint(88e18), 88e18);
-        // assertEq(srusd.previewMint(100e18), 100e18);
+        assertEq(srusd.previewMint(100e18), 128.696714604171560296e18);
 
         vm.prank(eoa1);
         srusd.mint(100e18, eoa1);
@@ -239,8 +213,8 @@ contract RatesTest is Test {
         vm.prank(eoa2);
         srusd.mint(100e18, eoa2);
 
-        assertEq(rusd.balanceOf(eoa1), 999_654.458228512096606152e18);
-        assertEq(rusd.balanceOf(eoa2), 999_654.458228512096606152e18);
+        assertEq(rusd.balanceOf(eoa1), 999_654.305899379989491871e18);
+        assertEq(rusd.balanceOf(eoa2), 999_654.305899379989491871e18);
 
         assertEq(srusd.balanceOf(eoa1), 300e18);
         assertEq(srusd.balanceOf(eoa2), 300e18);
@@ -280,10 +254,10 @@ contract RatesTest is Test {
 
         vm.warp(365 days);
 
-        assertEq(srusd.compoundFactor(), 1.487666071888954476505184327e27);
+        assertEq(srusd.compoundFactor(), 1.498775946215446644688504438e27);
         assertEq(srusd.compoundFactorAccum(), 1e27);
 
-        assertEq(srusd.previewWithdraw(100e18), 67.219386050140701140e18);
+        assertEq(srusd.previewWithdraw(100e18), 66.721113487649447483e18);
 
         vm.prank(eoa1);
         srusd.withdraw(100e18, eoa2, eoa1);
@@ -294,8 +268,8 @@ contract RatesTest is Test {
         assertEq(rusd.balanceOf(eoa1), 1_000_000e18 - 300e18);
         assertEq(rusd.balanceOf(eoa2), 1_000_000e18 - 300e18);
 
-        assertEq(srusd.balanceOf(eoa1), 332.780613949859298860e18);
-        assertEq(srusd.balanceOf(eoa2), 332.780613949859298860e18);
+        assertEq(srusd.balanceOf(eoa1), 333.278886512350552517e18);
+        assertEq(srusd.balanceOf(eoa2), 333.278886512350552517e18);
 
         assertEq(
             srusd.totalSupply(),
@@ -309,15 +283,15 @@ contract RatesTest is Test {
 
         assertEq(srusd.currentRate(), 0.000000021979553066486800000e27);
 
-        assertEq(srusd.compoundFactor(), 1.487666071888954476505184327e27);
-        assertEq(srusd.compoundFactorAccum(), 1.487666071888954476505184327e27);
+        assertEq(srusd.compoundFactor(), 1.498775946215446644688504438e27);
+        assertEq(srusd.compoundFactorAccum(), 1.498775946215446644688504438e27);
 
         vm.warp(2 * 365 days);
 
-        assertEq(srusd.compoundFactor(), 2.876214440327681182683276709e27);
-        assertEq(srusd.compoundFactorAccum(), 1.487666071888954476505184327e27);
+        assertEq(srusd.compoundFactor(), 2.980882195879748914500237647e27);
+        assertEq(srusd.compoundFactorAccum(),1.498775946215446644688504438e27);
 
-        assertEq(srusd.previewWithdraw(100e18), 34.767922237608683350e18);
+        assertEq(srusd.previewWithdraw(100e18), 33.547115729102793796e18);
 
         vm.prank(eoa1);
         srusd.withdraw(100e18, eoa1, eoa1);
@@ -328,8 +302,8 @@ contract RatesTest is Test {
         assertEq(rusd.balanceOf(eoa1), 1_000_000e18 - 200e18);
         assertEq(rusd.balanceOf(eoa2), 1_000_000e18 - 200e18);
 
-        assertEq(srusd.balanceOf(eoa1), 298.012691712250615510e18);
-        assertEq(srusd.balanceOf(eoa2), 298.012691712250615510e18);
+        assertEq(srusd.balanceOf(eoa1), 299.731770783247758721e18);
+        assertEq(srusd.balanceOf(eoa2), 299.731770783247758721e18);
 
         assertEq(
             srusd.totalSupply(),
@@ -366,10 +340,10 @@ contract RatesTest is Test {
 
         vm.warp(365 days);
 
-        assertEq(srusd.compoundFactor(), 1.169328831904187785743199702e27);
+        assertEq(srusd.compoundFactor(), 1.169973860158389478332097594e27);
         assertEq(srusd.compoundFactorAccum(), 1e27);
 
-        assertEq(srusd.previewRedeem(100e18), 116.932883190418778574e18);
+        assertEq(srusd.previewRedeem(100e18), 116.997386015838947833e18);
 
         vm.prank(eoa1);
         srusd.redeem(100e18, eoa2, eoa1);
@@ -377,8 +351,8 @@ contract RatesTest is Test {
         vm.prank(eoa2);
         srusd.redeem(100e18, eoa1, eoa2);
 
-        assertEq(rusd.balanceOf(eoa1), 999_716.932883190418778574e18);
-        assertEq(rusd.balanceOf(eoa2), 999_716.932883190418778574e18);
+        assertEq(rusd.balanceOf(eoa1), 999_716.997386015838947833e18);
+        assertEq(rusd.balanceOf(eoa2), 999_716.997386015838947833e18);
 
         assertEq(srusd.balanceOf(eoa1), 300e18);
         assertEq(srusd.balanceOf(eoa2), 300e18);
@@ -394,15 +368,15 @@ contract RatesTest is Test {
         assertEq(srusd.lastTimestamp(), 365 days);
 
         assertEq(srusd.currentRate(), 0.000000003022265993024580000e27);
-        assertEq(srusd.compoundFactor(), 1.169328831904187785743199702e27);
-        assertEq(srusd.compoundFactorAccum(), 1.169328831904187785743199702e27);
+        assertEq(srusd.compoundFactor(), 1.169973860158389478332097594e27);
+        assertEq(srusd.compoundFactorAccum(), 1.169973860158389478332097594e27);
 
         vm.warp(2 * 365 days);
 
-        assertEq(srusd.compoundFactor(), 1.286088882974846152740431336e27);
-        assertEq(srusd.compoundFactorAccum(), 1.169328831904187785743199702e27);
+        assertEq(srusd.compoundFactor(), 1.286967146041715602961404116e27);
+        assertEq(srusd.compoundFactorAccum(), 1.169973860158389478332097594e27);
 
-        assertEq(srusd.previewRedeem(100e18), 128.608888297484615274e18);
+        assertEq(srusd.previewRedeem(100e18), 128.696714604171560296e18);
 
         vm.prank(eoa1);
         srusd.redeem(100e18, eoa1, eoa1);
@@ -410,8 +384,8 @@ contract RatesTest is Test {
         vm.prank(eoa2);
         srusd.redeem(100e18, eoa2, eoa2);
 
-        assertEq(rusd.balanceOf(eoa1), 999_845.541771487903393848e18);
-        assertEq(rusd.balanceOf(eoa2), 999_845.541771487903393848e18);
+        assertEq(rusd.balanceOf(eoa1), 999_845.694100620010508129e18);
+        assertEq(rusd.balanceOf(eoa2), 999_845.694100620010508129e18);
 
         assertEq(srusd.balanceOf(eoa1), 200e18);
         assertEq(srusd.balanceOf(eoa2), 200e18);
