@@ -4,6 +4,8 @@ pragma solidity ^0.8.13;
 import {IERC1155} from "openzeppelin-contracts/contracts/token/ERC1155/IERC1155.sol";
 
 import {ERC20} from "openzeppelin-contracts/contracts/token/ERC20/ERC20.sol";
+import {ERC20Burnable} from "openzeppelin-contracts/contracts/token/ERC20/extensions/ERC20Burnable.sol";
+
 import {ERC4626} from "openzeppelin-contracts/contracts/token/ERC20/extensions/ERC4626.sol";
 
 import {IERC20Metadata} from "openzeppelin-contracts/contracts/interfaces/IERC20Metadata.sol";
@@ -12,6 +14,10 @@ import {Math} from "openzeppelin-contracts/contracts/utils/math/Math.sol";
 
 import {console} from "forge-std/console.sol";
 
+interface IStablecoin {
+    function mint(address, uint256) external;
+}
+
 contract Savingcoin is ERC4626 {
     event Update(
         uint256 compoundFactorAccum,
@@ -19,6 +25,8 @@ contract Savingcoin is ERC4626 {
         uint256 rate,
         uint256 timestamp
     );
+
+    uint256 public cap = 0;
 
     uint256 public compoundFactorAccum = 1e27;
     uint256 public currentRate = 0.000000000000000000000000000e27;
@@ -87,6 +95,45 @@ contract Savingcoin is ERC4626 {
         // uint256 term4 = (n * (n - 1) * (n - 2) * rate ** 3) / 6;
 
         return term1 + term2 + term3 / 1e27; // return term1 + term2 + term3 + term4;
+    }
+
+    // function _deposit(
+    //     address caller,
+    //     address receiver,
+    //     uint256 assets,
+    //     uint256 shares
+    // ) internal override {
+    //     // TODO: Check cap against max
+
+    //     ERC20Burnable(asset()).burnFrom(caller, assets);
+    //     _mint(receiver, shares);
+
+    //     emit Deposit(caller, receiver, assets, shares);
+    // }
+
+    // function _withdraw(
+    //     address caller,
+    //     address receiver,
+    //     address owner,
+    //     uint256 assets,
+    //     uint256 shares
+    // ) internal override {
+    //     if (caller != owner) {
+    //         _spendAllowance(owner, caller, shares);
+    //     }
+
+    //     _burn(owner, shares);
+    //     IStablecoin(asset()).mint(receiver, assets);
+
+    //     emit Withdraw(caller, receiver, owner, assets, shares);
+    // }
+
+    // function totalAssets() public view override returns (uint256) {
+    //     return _convertToAssets(totalSupply(), Math.Rounding.Floor);
+    // }
+
+    function setCap(uint256 cap_) external {
+        cap = cap_;
     }
 
     /// @notice Set the interest for srUSD

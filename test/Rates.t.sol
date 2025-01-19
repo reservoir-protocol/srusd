@@ -9,7 +9,7 @@ import {Savingcoin} from "src/Savingcoin.sol";
 import {Test} from "forge-std/Test.sol";
 import {console} from "forge-std/console.sol";
 
-contract RateTest is Test {
+contract RatesTest is Test {
     ERC20Mock rusd;
 
     Savingcoin srusd;
