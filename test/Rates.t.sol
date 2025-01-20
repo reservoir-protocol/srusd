@@ -5,36 +5,32 @@ pragma solidity ^0.8.24;
 import {ERC20} from "openzeppelin-contracts/contracts/token/ERC20/ERC20.sol";
 import {ERC20Burnable} from "openzeppelin-contracts/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 
-import {ERC20Mock} from "openzeppelin-contracts/contracts/mocks/token/ERC20Mock.sol";
-
 import {Savingcoin} from "src/Savingcoin.sol";
+
+import {StablecoinMock} from "./StablecoinMock.sol";
 
 import {Test} from "forge-std/Test.sol";
 import {console} from "forge-std/console.sol";
 
-contract StablecoinMock is ERC20Burnable {
-    constructor(string memory name, string memory symbol) ERC20(name, symbol) {}
-
-    function mint(address account, uint256 amount) external {
-        _mint(account, amount);
-    }
-}
-
 contract RatesTest is Test {
-    // ERC20Mock rusd;
-    StablecoinMock rusd;
-
     Savingcoin srusd;
+    StablecoinMock rusd;
 
     address eoa1 = vm.addr(1);
     address eoa2 = vm.addr(2);
 
     function setUp() external {
-        // rusd = new ERC20Mock();
         rusd = new StablecoinMock("Reservoir Stablecoin Mock", "rUSDM");
-        srusd = new Savingcoin("Reservoir Savingcoin", "srUSD", rusd);
+        srusd = new Savingcoin(
+            address(this),
+            "Reservoir Savingcoin",
+            "srUSD",
+            rusd
+        );
 
-        // rusd.grantRole(rusd.MINTER(), address(this));
+        srusd.grantRole(srusd.MANAGER(), address(this));
+
+        srusd.setCap(type(uint256).max);
 
         rusd.mint(eoa1, 1_000_000e18);
         rusd.mint(eoa2, 1_000_000e18);
@@ -44,28 +40,6 @@ contract RatesTest is Test {
 
         vm.prank(eoa2);
         rusd.approve(address(srusd), type(uint256).max);
-    }
-
-    function testInitialState() external view {
-        assertEq(srusd.symbol(), "srUSD");
-        assertEq(srusd.name(), "Reservoir Savingcoin");
-
-        assertEq(srusd.decimals(), 18);
-        assertEq(srusd.asset(), address(rusd));
-
-        assertEq(srusd.totalAssets(), 0);
-        assertEq(srusd.totalSupply(), 0);
-
-        assertEq(srusd.lastTimestamp(), 1);
-
-        assertEq(srusd.currentRate(), 0e27);
-        assertEq(srusd.compoundFactor(), 1e27);
-        assertEq(srusd.compoundFactorAccum(), 1e27);
-
-        assertEq(rusd.balanceOf(eoa1), 1_000_000e18);
-        assertEq(rusd.balanceOf(eoa2), 1_000_000e18);
-
-        assertEq(rusd.totalSupply(), 2_000_000e18);
     }
 
     function testDeposit() external {

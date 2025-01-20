@@ -3,13 +3,14 @@
 pragma solidity ^0.8.13;
 
 import {IERC1155} from "openzeppelin-contracts/contracts/token/ERC1155/IERC1155.sol";
+import {IERC20Metadata} from "openzeppelin-contracts/contracts/interfaces/IERC20Metadata.sol";
+
+import {AccessControl} from "openzeppelin-contracts/contracts/access/AccessControl.sol";
 
 import {ERC20} from "openzeppelin-contracts/contracts/token/ERC20/ERC20.sol";
 import {ERC20Burnable} from "openzeppelin-contracts/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 
 import {ERC4626} from "openzeppelin-contracts/contracts/token/ERC20/extensions/ERC4626.sol";
-
-import {IERC20Metadata} from "openzeppelin-contracts/contracts/interfaces/IERC20Metadata.sol";
 
 import {Math} from "openzeppelin-contracts/contracts/utils/math/Math.sol";
 
@@ -21,13 +22,14 @@ interface IStablecoin {
     function burnFrom(address, uint256) external;
 }
 
-contract Savingcoin is ERC4626 {
-    event Update(
-        uint256 compoundFactorAccum,
-        uint256 currentRate,
-        uint256 rate,
-        uint256 timestamp
-    );
+contract Savingcoin is AccessControl, ERC4626 {
+    uint256 public constant RAY = 1e27;
+
+    bytes32 public constant MANAGER =
+        keccak256(abi.encode("savingcoin.manager"));
+
+    event Cap(uint256, uint256);
+    event Update(uint256, uint256, uint256, uint256);
 
     uint256 public cap = 0;
 
@@ -43,10 +45,13 @@ contract Savingcoin is ERC4626 {
     uint256 public lastTimestamp;
 
     constructor(
+        address admin,
         string memory name,
         string memory symbol,
         IERC20Metadata asset
     ) ERC20(name, symbol) ERC4626(asset) {
+        _grantRole(DEFAULT_ADMIN_ROLE, admin);
+
         lastTimestamp = block.timestamp;
     }
 
@@ -118,11 +123,12 @@ contract Savingcoin is ERC4626 {
         uint256 assets,
         uint256 shares
     ) internal override {
-        // TODO: Check cap against max
+        require(
+            cap > _convertToAssets(shares + totalSupply(), Math.Rounding.Ceil),
+            "newly issued shares can not exceed notional cap"
+        );
 
-        // ERC20Burnable(asset()).burnFrom(caller, assets);
         IStablecoin(asset()).burnFrom(caller, assets);
-
         _mint(receiver, shares);
 
         emit Deposit(caller, receiver, assets, shares);
@@ -146,17 +152,19 @@ contract Savingcoin is ERC4626 {
     }
 
     function totalAssets() public view override returns (uint256) {
-        return _convertToAssets(totalSupply(), Math.Rounding.Floor);
+        return _convertToAssets(totalSupply(), Math.Rounding.Ceil);
     }
 
-    function setCap(uint256 cap_) external {
+    function setCap(uint256 cap_) external onlyRole(MANAGER) {
+        emit Cap(cap, cap_);
+
         cap = cap_;
     }
 
     /// @notice Set the interest for srUSD
     /// @param rate New value for the interest rate
-    function update(uint256 rate) external {
-        require(1e27 > rate, "SM: Savings rate can not be above 100% per anum");
+    function update(uint256 rate) external onlyRole(MANAGER) {
+        require(1e27 > rate, "daily savings rate can not be above 100%");
 
         uint256 accum = compoundFactorAccum *
             _compoundFactor(currentRate, block.timestamp, lastTimestamp);

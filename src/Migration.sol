@@ -41,10 +41,12 @@ contract Migration {
         rusd.approve(vault_, type(uint256).max);
     }
 
+    /// @notice Convert srUSD v1 to srUSD v2
+    /// @param amount Amountof srUSD v1 to exchange
     function migrate(uint256 amount) external returns (uint256) {
         require(
             srusd.transferFrom(msg.sender, address(this), amount),
-            "transfer failed"
+            "transfer into migration contract failed"
         );
 
         uint256 balanceBefore = rusd.balanceOf(address(this));
@@ -53,9 +55,11 @@ contract Migration {
 
         uint256 balanceAfter = rusd.balanceOf(address(this));
 
-        // Should be same as amount
+        // Should be same as `amount`
         uint256 balance = balanceAfter - balanceBefore;
 
         return vault.deposit(balance, msg.sender);
     }
+
+    // TODO: add recover method
 }
