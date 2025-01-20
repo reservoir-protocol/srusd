@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.13;
+pragma solidity ^0.8.24;
 
-import {IERC1155} from "openzeppelin-contracts/contracts/token/ERC1155/IERC1155.sol";
 import {IERC20Metadata} from "openzeppelin-contracts/contracts/interfaces/IERC20Metadata.sol";
 
 import {AccessControl} from "openzeppelin-contracts/contracts/access/AccessControl.sol";
@@ -13,8 +12,6 @@ import {ERC20Burnable} from "openzeppelin-contracts/contracts/token/ERC20/extens
 import {ERC4626} from "openzeppelin-contracts/contracts/token/ERC20/extensions/ERC4626.sol";
 
 import {Math} from "openzeppelin-contracts/contracts/utils/math/Math.sol";
-
-import {console} from "forge-std/console.sol";
 
 interface IStablecoin {
     function mint(address, uint256) external;
@@ -64,7 +61,7 @@ contract Savingcoin is AccessControl, ERC4626 {
         uint256 accum = compoundFactorAccum *
             _compoundFactor(currentRate, block.timestamp, lastTimestamp);
 
-        return (assets * 1e27) / (accum / 1e27);
+        return (assets * RAY) / (accum / RAY);
     }
 
     /// @notice Conversion method from shares to assets
@@ -76,7 +73,7 @@ contract Savingcoin is AccessControl, ERC4626 {
         uint256 accum = compoundFactorAccum *
             _compoundFactor(currentRate, block.timestamp, lastTimestamp);
 
-        return (shares * (accum / 1e27)) / 1e27;
+        return (shares * (accum / RAY)) / RAY;
     }
 
     /// @notice Compound factor calculation based on the initial time stamp
@@ -85,7 +82,7 @@ contract Savingcoin is AccessControl, ERC4626 {
         uint256 accum = compoundFactorAccum *
             _compoundFactor(currentRate, block.timestamp, lastTimestamp);
 
-        return accum / 1e27;
+        return accum / RAY;
     }
 
     function _compoundFactor(
@@ -97,21 +94,17 @@ contract Savingcoin is AccessControl, ERC4626 {
 
         uint256 n = currentTimestamp - lastUpdateTimestamp;
 
-        uint256 term1 = 1e27;
+        uint256 term1 = RAY;
         uint256 term2 = n * rate;
 
         if (n == 0) return term1 + term2;
 
-        uint256 term3 = ((n - 1) * n * ((rate * rate) / 1e27)) / 2;
+        uint256 term3 = ((n - 1) * n * ((rate * rate) / RAY)) / 2;
 
         if (n == 1) return term1 + term2 + term3;
 
-        uint256 term4 = (n *
-            (n - 1) *
-            (n - 2) *
-            ((rate * rate) / 1e27) *
-            rate) /
-            1e27 /
+        uint256 term4 = (n * (n - 1) * (n - 2) * ((rate * rate) / RAY) * rate) /
+            RAY /
             6;
 
         return term1 + term2 + term3 + term4;
@@ -164,12 +157,12 @@ contract Savingcoin is AccessControl, ERC4626 {
     /// @notice Set the interest for srUSD
     /// @param rate New value for the interest rate
     function update(uint256 rate) external onlyRole(MANAGER) {
-        require(1e27 > rate, "daily savings rate can not be above 100%");
+        require(RAY > rate, "daily savings rate can not be above 100%");
 
         uint256 accum = compoundFactorAccum *
             _compoundFactor(currentRate, block.timestamp, lastTimestamp);
 
-        compoundFactorAccum = accum / 1e27;
+        compoundFactorAccum = accum / RAY;
 
         emit Update(compoundFactorAccum, currentRate, rate, block.timestamp);
 
