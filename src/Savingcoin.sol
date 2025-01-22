@@ -4,6 +4,8 @@ pragma solidity ^0.8.24;
 
 import {IERC20Metadata} from "openzeppelin-contracts/contracts/interfaces/IERC20Metadata.sol";
 
+import {IERC4626} from "openzeppelin-contracts/contracts/interfaces/IERC4626.sol";
+
 import {AccessControl} from "openzeppelin-contracts/contracts/access/AccessControl.sol";
 
 import {ERC20} from "openzeppelin-contracts/contracts/token/ERC20/ERC20.sol";
@@ -18,6 +20,8 @@ interface IStablecoin {
 
     function burnFrom(address, uint256) external;
 }
+
+interface ISavingcoin is IERC20Metadata, IERC4626 {}
 
 contract Savingcoin is AccessControl, ERC4626 {
     uint256 public constant RAY = 1e27;
