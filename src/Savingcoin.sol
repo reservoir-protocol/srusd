@@ -21,7 +21,6 @@ interface IStablecoin {
     function burnFrom(address, uint256) external;
 }
 
-interface ISavingcoin is IERC20Metadata, IERC4626 {}
 
 contract Savingcoin is AccessControl, ERC4626 {
     uint256 public constant RAY = 1e27;
