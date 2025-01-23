@@ -121,7 +121,7 @@ contract Savingcoin is AccessControl, ERC4626 {
         uint256 shares
     ) internal override {
         require(
-            cap > _convertToAssets(shares + totalSupply(), Math.Rounding.Ceil),
+            cap >= _convertToAssets(shares + totalSupply(), Math.Rounding.Ceil),
             "newly issued shares can not exceed notional cap"
         );
 
