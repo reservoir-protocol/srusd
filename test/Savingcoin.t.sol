@@ -698,4 +698,53 @@ contract SavingcoinTest is Test {
 
         // TODO: Handle case where `n` = 0, 1, 2, ...
     }
+
+    function testAPY() external {
+        // Test with zero rate
+        assertEq(srusd.currentRate(), 0.000000000000000000000000000e27);
+        assertEq(srusd.apy(), 1e27);
+
+        // Test with 10% APR rate
+        srusd.update(0.000000003022265993024580000e27);
+        assertEq(srusd.currentRate(), 0.000000003022265993024580000e27);
+
+        // The APY should be approximately 10% in RAY format
+        // For 10% APR, the APY should be close to 0.1 * 1e27 = 0.1e27
+        uint256 apyAt10Percent = srusd.apy();
+        assertApproxEqRel(apyAt10Percent, 0.1e27, 0.01e27); // Allow 1% relative error
+
+        // Test with 17% APR rate
+        srusd.update(0.000000004978556233936620000e27);
+        assertEq(srusd.currentRate(), 0.000000004978556233936620000e27);
+
+        // The APY should be approximately 17% in RAY format
+        // For 17% APR, the APY should be close to 0.17 * 1e27 = 0.17e27
+        uint256 apyAt17Percent = srusd.apy();
+        assertApproxEqRel(apyAt17Percent, 0.17e27, 0.01e27); // Allow 1% relative error
+
+        // Test with 50% APR rate
+        srusd.update(0.000000012857214404249400000e27);
+        assertEq(srusd.currentRate(), 0.000000012857214404249400000e27);
+
+        // The APY should be approximately 50% in RAY format
+        // For 50% APR, the APY should be close to 0.5 * 1e27 = 0.5e27
+        uint256 apyAt50Percent = srusd.apy();
+        assertApproxEqRel(apyAt50Percent, 0.5e27, 0.01e27); // Allow 1% relative error
+
+        // Test with 100% APR rate
+        srusd.update(0.000000021979553066486800000e27);
+        assertEq(srusd.currentRate(), 0.000000021979553066486800000e27);
+
+        // The APY should be approximately 100% in RAY format
+        // For 100% APR, the APY should be close to 1 * 1e27 = 1e27
+        uint256 apyAt100Percent = srusd.apy();
+        assertApproxEqRel(apyAt100Percent, 1e27, 0.01e27); // Allow 1% relative error
+
+        // Verify that APY is always higher than APR due to compounding
+        // (except at 0% where they're equal)
+        assertTrue(apyAt10Percent > 0.1e27);
+        assertTrue(apyAt17Percent > 0.17e27);
+        assertTrue(apyAt50Percent > 0.5e27);
+        assertTrue(apyAt100Percent > 1e27);
+    }
 }

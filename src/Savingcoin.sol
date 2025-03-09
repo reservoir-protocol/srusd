@@ -88,6 +88,24 @@ contract Savingcoin is AccessControl, ERC4626 {
         return accum / RAY;
     }
 
+    /// @notice Calculate the Annual Percentage Yield (APY) based on the current rate
+    /// @return uint256 APY as a percentage value in RAY format (1e27)
+    function apy() external view returns (uint256) {
+        // APY = (1 + r)^(seconds in a year) - 1
+        uint256 secondsInYear = 31536000; // 365 days
+
+        // Use a fixed time period (now to now + 1 year) for calculation
+        // This ensures we're calculating based on the current rate only
+        uint256 startTime = 0; // Starting from time 0
+        uint256 endTime = secondsInYear; // To time 0 + 1 year
+
+        // Calculate (1 + r)^(seconds in a year) using the _compoundFactor function
+        // The _compoundFactor function already handles RAY format (1e27) correctly
+        uint256 compoundedValue = _compoundFactor(currentRate, endTime, startTime);
+
+        return compoundedValue;
+    }
+
     function _compoundFactor(
         uint256 rate,
         uint256 currentTimestamp,
