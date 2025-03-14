@@ -42,7 +42,7 @@ contract SavingModuleMock {
 
         assert(srusd.allowance(msg.sender, address(this)) >= burnAmount);
 
-        srusd.burn(msg.sender, burnAmount);
+        // srusd.burn(msg.sender, burnAmount);
 
         rusd.mint(msg.sender, amount);
     }
