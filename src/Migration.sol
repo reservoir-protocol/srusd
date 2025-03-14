@@ -17,6 +17,8 @@ import {console} from "forge-std/console.sol";
 interface ISavingModule {
     function redeem(uint256) external;
 
+    function redeemFee() external view returns (uint256);
+
     function currentPrice() external view returns (uint256);
 }
 
@@ -40,6 +42,7 @@ contract Migration {
         savingModule = ISavingModule(savingModule_);
 
         rusd.approve(vault_, type(uint256).max);
+        srusd.approve(savingModule_, type(uint256).max);
     }
 
     /// @notice Convert srUSD v1 to srUSD v2

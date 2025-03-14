@@ -2,6 +2,8 @@
 
 pragma solidity ^0.8.24;
 
+import {IERC20} from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
+
 import {ERC20} from "openzeppelin-contracts/contracts/token/ERC20/ERC20.sol";
 import {ERC20Burnable} from "openzeppelin-contracts/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 
@@ -19,20 +21,35 @@ interface IStablecoin {
     function mint(address, uint256) external;
 }
 
+interface ISavingcoin is IERC20 {
+    function burn(address, uint256) external;
+}
+
 contract SavingModuleMock {
     IStablecoin rusd;
+    ISavingcoin srusd;
 
+    uint256 public redeemFee = 0e6; // 230
     uint256 public currentPrice = 1e8;
 
-    constructor(address token_) {
-        rusd = IStablecoin(token_);
+    constructor(address rusd_, address srusd_) {
+        rusd = IStablecoin(rusd_);
+        srusd = ISavingcoin(srusd_);
     }
 
     function redeem(uint256 amount) external {
+        uint256 burnAmount = (amount * (1e6 + redeemFee)) / 1e6;
+
+        assert(srusd.allowance(msg.sender, address(this)) >= burnAmount);
+
+        srusd.burn(msg.sender, burnAmount);
+
         rusd.mint(msg.sender, amount);
     }
 
-    // TODO: Implement our redeem
+    function setRedeemFee(uint256 fee) external {
+        currentPrice = fee;
+    }
 
     function setCurrentPrice(uint256 price) external {
         currentPrice = price;
@@ -55,7 +72,7 @@ contract MigrationTest is Test {
         srusd = new ERC20Mock();
         rusd = new StablecoinMock("Reservoir Stablecoin Mock", "rUSDM");
 
-        savingModule = new SavingModuleMock(address(rusd));
+        savingModule = new SavingModuleMock(address(rusd), address(srusd));
         vault = new Savingcoin(
             address(this),
             "Reservoir Savingcoin",
