@@ -3,6 +3,7 @@
 pragma solidity ^0.8.24;
 
 import {IERC20} from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
+import {IERC4626} from "openzeppelin-contracts/contracts/interfaces/IERC4626.sol";
 
 import {ERC20} from "openzeppelin-contracts/contracts/token/ERC20/ERC20.sol";
 import {ERC20Burnable} from "openzeppelin-contracts/contracts/token/ERC20/extensions/ERC20Burnable.sol";
@@ -279,10 +280,12 @@ contract MigrationTest is Test {
         console.log(fork);
 
         Migration migrationFork = Migration(
-            0x5Afec4a9E2A05bC581246A21f6245f82B6eb767C
+            0xa5c93F610EfF99Cb52A688242CDeA86b85AF1f6f
         );
 
         IERC20 srusdFork = IERC20(address(migrationFork.srusd()));
+                IERC4626 vaultFork = IERC4626(address(migrationFork.vault()));
+
         ISavingModule savingModuleFork = ISavingModule(
             address(migrationFork.savingModule())
         );
@@ -303,6 +306,7 @@ contract MigrationTest is Test {
         uint256 amount = (balance * price * 1e6) / (1e8 * (1e6 + fee));
 
         console.log(amount);
+        console.log(vault.balanceOf(0xf23D535a88eBF8FAF018b64Cdeb1D27C8414DC69));
         console.log(savingModuleFork.previewRedeem(amount));
 
         vm.prank(0xf23D535a88eBF8FAF018b64Cdeb1D27C8414DC69);
@@ -319,6 +323,7 @@ contract MigrationTest is Test {
         console.log(
             srusdFork.balanceOf(0xf23D535a88eBF8FAF018b64Cdeb1D27C8414DC69)
         );
+        console.log(vault.balanceOf(0xf23D535a88eBF8FAF018b64Cdeb1D27C8414DC69));
 
         assertTrue(true);
     }
