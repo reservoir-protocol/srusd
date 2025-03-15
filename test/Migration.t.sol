@@ -9,7 +9,7 @@ import {ERC20Burnable} from "openzeppelin-contracts/contracts/token/ERC20/extens
 
 import {ERC20Mock} from "openzeppelin-contracts/contracts/mocks/token/ERC20Mock.sol";
 
-import {Migration} from "src/Migration.sol";
+import {Migration, ISavingModule} from "src/Migration.sol";
 import {Savingcoin} from "src/Savingcoin.sol";
 
 import {StablecoinMock} from "./StablecoinMock.sol";
@@ -179,5 +179,91 @@ contract MigrationTest is Test {
         assertEq(srusd.balanceOf(eoa2), 0);
 
         // TODO: Check the balance in the migration contract
+    }
+
+    function testMigrateFork() external {
+        uint256 fork = vm.createSelectFork(
+            "https://gateway.tenderly.co/public/polygon"
+        );
+
+        console.log(fork);
+
+        IERC20 srusdFork = IERC20(0xbb97eCFe1cd0f49b1F6bF4172b44E75394cfe64a);
+        ISavingModule savingModuleFork = ISavingModule(
+            0x23739D8B84E8849C7d8002811F27736E12a3DA7D
+        );
+
+        console.log(
+            srusdFork.balanceOf(0xf23D535a88eBF8FAF018b64Cdeb1D27C8414DC69)
+        );
+        console.log(savingModuleFork.currentPrice());
+
+        uint256 balance = srusdFork.balanceOf(
+            0xf23D535a88eBF8FAF018b64Cdeb1D27C8414DC69
+        );
+
+        uint256 fee = savingModuleFork.redeemFee();
+        uint256 price = savingModuleFork.currentPrice();
+
+        // uint256 amount = (balance * price) / 1e8;
+        uint256 amount = (balance * price * 1e6) / (1e8 * (1e6 + fee));
+
+        console.log(amount);
+        console.log(savingModuleFork.previewRedeem(amount));
+
+        vm.prank(0xf23D535a88eBF8FAF018b64Cdeb1D27C8414DC69);
+        srusdFork.approve(address(savingModuleFork), type(uint256).max);
+
+        vm.prank(0xf23D535a88eBF8FAF018b64Cdeb1D27C8414DC69);
+        savingModuleFork.redeem(amount);
+
+        console.log(
+            srusdFork.balanceOf(0xf23D535a88eBF8FAF018b64Cdeb1D27C8414DC69)
+        );
+
+        assertTrue(true);
+    }
+
+    function testMigrateFork2() external {
+        uint256 fork = vm.createSelectFork(
+            "https://gateway.tenderly.co/public/polygon"
+        );
+
+        console.log(fork);
+
+        IERC20 srusdFork = IERC20(0xbb97eCFe1cd0f49b1F6bF4172b44E75394cfe64a);
+        ISavingModule savingModuleFork = ISavingModule(
+            0x23739D8B84E8849C7d8002811F27736E12a3DA7D
+        );
+
+        console.log(
+            srusdFork.balanceOf(0xf23D535a88eBF8FAF018b64Cdeb1D27C8414DC69)
+        );
+        console.log(savingModuleFork.currentPrice());
+
+        uint256 balance = srusdFork.balanceOf(
+            0xf23D535a88eBF8FAF018b64Cdeb1D27C8414DC69
+        );
+
+        uint256 fee = savingModuleFork.redeemFee();
+        uint256 price = savingModuleFork.currentPrice();
+
+        // uint256 amount = (balance * price) / 1e8;
+        uint256 amount = (balance * price * 1e6) / (1e8 * (1e6 + fee));
+
+        console.log(amount);
+        console.log(savingModuleFork.previewRedeem(amount));
+
+        vm.prank(0xf23D535a88eBF8FAF018b64Cdeb1D27C8414DC69);
+        srusdFork.approve(address(savingModuleFork), type(uint256).max);
+
+        vm.prank(0xf23D535a88eBF8FAF018b64Cdeb1D27C8414DC69);
+        savingModuleFork.redeem(amount);
+
+        console.log(
+            srusdFork.balanceOf(0xf23D535a88eBF8FAF018b64Cdeb1D27C8414DC69)
+        );
+
+        assertTrue(true);
     }
 }

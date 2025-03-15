@@ -17,6 +17,8 @@ import {console} from "forge-std/console.sol";
 interface ISavingModule {
     function redeem(uint256) external;
 
+    function previewRedeem(uint256) external view returns (uint256);
+
     function redeemFee() external view returns (uint256);
 
     function currentPrice() external view returns (uint256);
