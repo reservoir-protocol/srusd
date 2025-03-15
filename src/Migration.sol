@@ -49,20 +49,26 @@ contract Migration {
 
     /// @notice Convert all srUSD v1 to srUSD v2
     function migrateBalance() external returns (uint256) {
-        uint256 amount = _previewRedeemValue(srusd.balanceOf(msg.sender));
+        uint256 balance = srusd.balanceOf(msg.sender);
+        uint256 amount = _previewRedeemValue(balance);
 
-        return _migrate(amount);
+        return _migrate(amount, balance);
     }
 
     /// @notice Convert srUSD v1 to srUSD v2
     /// @param amount Amountof srUSD v1 to exchange
     function migrate(uint256 amount) external returns (uint256) {
-        return _migrate(amount);
+        uint256 balance = srusd.balanceOf(msg.sender);
+
+        return _migrate(amount, balance);
     }
 
-    function _migrate(uint256 amount) private returns (uint256) {
+    function _migrate(
+        uint256 amount,
+        uint256 balance
+    ) private returns (uint256) {
         require(
-            srusd.transferFrom(msg.sender, address(this), amount),
+            srusd.transferFrom(msg.sender, address(this), balance),
             "transfer into migration contract failed"
         );
 
@@ -72,10 +78,9 @@ contract Migration {
 
         uint256 balanceAfter = rusd.balanceOf(address(this));
 
-        // Should be same as `amount`
-        uint256 balance = balanceAfter - balanceBefore;
+        require(balanceAfter > balanceBefore, "error on redeem");
 
-        return vault.deposit(balance, msg.sender);
+        return vault.deposit(balanceAfter - balanceBefore, msg.sender);
     }
 
     /// @notice Calculates the amount of rUSD returned to the sender
