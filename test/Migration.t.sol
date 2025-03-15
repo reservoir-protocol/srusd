@@ -231,9 +231,13 @@ contract MigrationTest is Test {
 
         console.log(fork);
 
-        IERC20 srusdFork = IERC20(0xbb97eCFe1cd0f49b1F6bF4172b44E75394cfe64a);
+        Migration migrationFork = Migration(
+            0x762925054575EBA0E7C5305C8a2985d77C4a2e1A
+        );
+
+        IERC20 srusdFork = IERC20(address(migrationFork.srusd()));
         ISavingModule savingModuleFork = ISavingModule(
-            0x23739D8B84E8849C7d8002811F27736E12a3DA7D
+            address(migrationFork.savingModule())
         );
 
         console.log(
@@ -255,10 +259,10 @@ contract MigrationTest is Test {
         console.log(savingModuleFork.previewRedeem(amount));
 
         vm.prank(0xf23D535a88eBF8FAF018b64Cdeb1D27C8414DC69);
-        srusdFork.approve(address(savingModuleFork), type(uint256).max);
+        srusdFork.approve(address(migrationFork), type(uint256).max);
 
         vm.prank(0xf23D535a88eBF8FAF018b64Cdeb1D27C8414DC69);
-        savingModuleFork.redeem(amount);
+        migrationFork.migrate(amount);
 
         console.log(
             srusdFork.balanceOf(0xf23D535a88eBF8FAF018b64Cdeb1D27C8414DC69)

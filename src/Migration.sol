@@ -47,9 +47,20 @@ contract Migration {
         srusd.approve(savingModule_, type(uint256).max);
     }
 
+    /// @notice Convert all srUSD v1 to srUSD v2
+    function migrateBalance() external returns (uint256) {
+        uint256 amount = _previewRedeemValue(srusd.balanceOf(msg.sender));
+
+        return _migrate(amount);
+    }
+
     /// @notice Convert srUSD v1 to srUSD v2
     /// @param amount Amountof srUSD v1 to exchange
     function migrate(uint256 amount) external returns (uint256) {
+        return _migrate(amount);
+    }
+
+    function _migrate(uint256 amount) private returns (uint256) {
         require(
             srusd.transferFrom(msg.sender, address(this), amount),
             "transfer into migration contract failed"
@@ -57,7 +68,7 @@ contract Migration {
 
         uint256 balanceBefore = rusd.balanceOf(address(this));
 
-        savingModule.redeem((amount * savingModule.currentPrice()) / 1e8);
+        savingModule.redeem(amount);
 
         uint256 balanceAfter = rusd.balanceOf(address(this));
 
@@ -65,6 +76,23 @@ contract Migration {
         uint256 balance = balanceAfter - balanceBefore;
 
         return vault.deposit(balance, msg.sender);
+    }
+
+    /// @notice Calculates the amount of rUSD returned to the sender
+    /// @param amount Amountof srUSD v1 to exchange
+    function previewRedeemValue(
+        uint256 amount
+    ) external view returns (uint256) {
+        return _previewRedeemValue(amount);
+    }
+
+    function _previewRedeemValue(
+        uint256 amount
+    ) private view returns (uint256) {
+        uint256 fee = savingModule.redeemFee();
+        uint256 price = savingModule.currentPrice();
+
+        return (amount * price * 1e6) / (1e8 * (1e6 + fee));
     }
 
     // TODO: add recover method
