@@ -271,4 +271,52 @@ contract MigrationTest is Test {
 
         assertTrue(true);
     }
+
+    function testMigrateFork3() external {
+        address eoaf = 0xf23D535a88eBF8FAF018b64Cdeb1D27C8414DC69;
+
+        // // 69209049
+        // uint256 fork = vm.createSelectFork(
+        //     "https://gateway.tenderly.co/public/polygon"
+        // );
+
+        uint256 fork = vm.createSelectFork(
+            "https://gateway.tenderly.co/public/polygon",
+            69209000 // 69185970
+        );
+
+        console.log(fork);
+
+        Migration migrationFork = Migration(
+            0xD58EFea2dd28E708C0d7fD4ac776d0a45b6286ee
+        );
+
+        IERC20 srusdFork = IERC20(address(migrationFork.srusd()));
+        IERC4626 vaultFork = IERC4626(address(migrationFork.vault()));
+
+        // ISavingModule savingModuleFork = ISavingModule(
+        //     address(migrationFork.savingModule())
+        // );
+
+        uint256 balance = srusdFork.balanceOf(eoaf);
+
+        console.log(balance);
+        assertEq(balance, 1_579_347_061_350_484_709_925);
+
+        vm.prank(eoaf);
+        srusdFork.approve(address(migrationFork), type(uint256).max);
+
+        vm.prank(eoaf);
+        migrationFork.migrate(balance / 10);
+
+        assertEq(srusdFork.balanceOf(eoaf), 1_421_412_355_215_436_238_933);
+
+        vm.prank(eoaf);
+        migrationFork.migrateBalance();
+
+        assertEq(srusdFork.balanceOf(eoaf), 0);
+
+        // console.log(srusdFork.balanceOf(eoaf));
+        console.log(vaultFork.balanceOf(eoaf));
+    }
 }
