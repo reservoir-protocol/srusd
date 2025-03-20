@@ -12,10 +12,12 @@ import {IERC20Metadata} from "openzeppelin-contracts/contracts/interfaces/IERC20
 
 import {Math} from "openzeppelin-contracts/contracts/utils/math/Math.sol";
 
-import {console} from "forge-std/console.sol";
-
 interface ISavingModule {
     function redeem(uint256) external;
+
+    function previewRedeem(uint256) external view returns (uint256);
+
+    function redeemFee() external view returns (uint256);
 
     function currentPrice() external view returns (uint256);
 }
@@ -40,26 +42,60 @@ contract Migration {
         savingModule = ISavingModule(savingModule_);
 
         rusd.approve(vault_, type(uint256).max);
+        srusd.approve(savingModule_, type(uint256).max);
+    }
+
+    /// @notice Convert all srUSD v1 to srUSD v2
+    function migrateBalance() external returns (uint256) {
+        uint256 balance = srusd.balanceOf(msg.sender);
+        uint256 amount = _previewRedeemValue(balance);
+
+        return _migrate(amount, balance);
     }
 
     /// @notice Convert srUSD v1 to srUSD v2
-    /// @param amount Amountof srUSD v1 to exchange
-    function migrate(uint256 amount) external returns (uint256) {
+    /// @param balance Amountof srUSD v1 to exchange
+    function migrate(uint256 balance) external returns (uint256) {
+        uint256 amount = _previewRedeemValue(balance);
+
+        return _migrate(amount, balance);
+    }
+
+    function _migrate(
+        uint256 amount,
+        uint256 balance
+    ) private returns (uint256) {
         require(
-            srusd.transferFrom(msg.sender, address(this), amount),
+            srusd.transferFrom(msg.sender, address(this), balance),
             "transfer into migration contract failed"
         );
 
         uint256 balanceBefore = rusd.balanceOf(address(this));
 
-        savingModule.redeem((amount * savingModule.currentPrice()) / 1e8);
+        savingModule.redeem(amount);
 
         uint256 balanceAfter = rusd.balanceOf(address(this));
 
-        // Should be same as `amount`
-        uint256 balance = balanceAfter - balanceBefore;
+        require(balanceAfter > balanceBefore, "error on redeem");
 
-        return vault.deposit(balance, msg.sender);
+        return vault.deposit(balanceAfter - balanceBefore, msg.sender);
+    }
+
+    /// @notice Calculates the amount of rUSD returned to the sender
+    /// @param amount Amountof srUSD v1 to exchange
+    function previewRedeemValue(
+        uint256 amount
+    ) external view returns (uint256) {
+        return _previewRedeemValue(amount);
+    }
+
+    function _previewRedeemValue(
+        uint256 amount
+    ) private view returns (uint256) {
+        uint256 fee = savingModule.redeemFee();
+        uint256 price = savingModule.currentPrice();
+
+        return (amount * price * 1e6) / (1e8 * (1e6 + fee));
     }
 
     // TODO: add recover method
