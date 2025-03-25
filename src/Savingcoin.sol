@@ -4,6 +4,7 @@ pragma solidity ^0.8.24;
 
 import {IERC20Metadata} from "openzeppelin-contracts/contracts/interfaces/IERC20Metadata.sol";
 
+import {IERC20} from "openzeppelin-contracts/contracts/interfaces/IERC20.sol";
 import {IERC4626} from "openzeppelin-contracts/contracts/interfaces/IERC4626.sol";
 
 import {AccessControl} from "openzeppelin-contracts/contracts/access/AccessControl.sol";
@@ -20,7 +21,6 @@ interface IStablecoin {
 
     function burnFrom(address, uint256) external;
 }
-
 
 contract Savingcoin is AccessControl, ERC4626 {
     uint256 public constant RAY = 1e27;
@@ -101,7 +101,11 @@ contract Savingcoin is AccessControl, ERC4626 {
 
         // Calculate (1 + r)^(seconds in a year) using the _compoundFactor function
         // The _compoundFactor function already handles RAY format (1e27) correctly
-        uint256 compoundedValue = _compoundFactor(currentRate, endTime, startTime);
+        uint256 compoundedValue = _compoundFactor(
+            currentRate,
+            endTime,
+            startTime
+        );
 
         return compoundedValue;
     }
@@ -169,6 +173,8 @@ contract Savingcoin is AccessControl, ERC4626 {
         return _convertToAssets(totalSupply(), Math.Rounding.Ceil);
     }
 
+    /// @notice Sets the notional cap for `totalAssets`
+    /// @param cap_ The notional value cap
     function setCap(uint256 cap_) external onlyRole(MANAGER) {
         emit Cap(cap, cap_);
 
@@ -189,5 +195,14 @@ contract Savingcoin is AccessControl, ERC4626 {
 
         currentRate = rate;
         lastTimestamp = block.timestamp;
+    }
+
+    function recover(
+        address _token,
+        address _reciever
+    ) external onlyRole(MANAGER) {
+        IERC20 token = IERC20(_token);
+
+        token.transfer(_reciever, token.balanceOf(address(this)));
     }
 }
