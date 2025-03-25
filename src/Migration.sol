@@ -97,6 +97,4 @@ contract Migration {
 
         return (amount * price * 1e6) / (1e8 * (1e6 + fee));
     }
-
-    // TODO: add recover method
 }
