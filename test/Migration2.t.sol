@@ -149,7 +149,7 @@ contract MigrationTest2 is Test {
         );
     }
 
-    function testFailMigrateInsufficientBalance() public {
+    function test_RevertWhen_MigrateInsufficientBalance() public {
         uint256 balance = 100e18;
         uint256 migrateAmount = 200e18;
 
@@ -159,18 +159,35 @@ contract MigrationTest2 is Test {
         srusd.approve(address(migration), type(uint256).max);
 
         // Should revert when trying to migrate more than balance
-        vm.expectRevert("ERC20: transfer amount exceeds balance");
+        // OpenZeppelin v5 uses custom errors: ERC20InsufficientBalance(address from, uint256 fromBalance, uint256 needed)
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                bytes4(keccak256("ERC20InsufficientBalance(address,uint256,uint256)")),
+                USER,
+                balance,
+                migrateAmount
+            )
+        );
         migration.migrate(migrateAmount);
         vm.stopPrank();
     }
 
-    function testFailMigrateNoApproval() public {
+    function test_RevertWhen_MigrateNoApproval() public {
         uint256 amount = 100e18;
         address newUser = address(0x3);
 
         srusd.mint(newUser, amount);
 
+        // OpenZeppelin v5 uses custom errors: ERC20InsufficientAllowance(address spender, uint256 allowance, uint256 needed)
         vm.prank(newUser);
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                bytes4(keccak256("ERC20InsufficientAllowance(address,uint256,uint256)")),
+                address(migration),
+                0,
+                amount
+            )
+        );
         migration.migrate(amount); // Should fail due to no approval
     }
 

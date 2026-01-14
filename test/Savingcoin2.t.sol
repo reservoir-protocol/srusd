@@ -253,8 +253,9 @@ contract SavingcoinTest2 is Test {
         );
     }
 
-    function testFailRateAbove100Percent() public {
+    function test_RevertWhen_RateAbove100Percent() public {
         vm.prank(MANAGER);
+        vm.expectRevert("daily savings rate can not be above 100%");
         savingcoin.update(RAY); // Try to set 100% rate
     }
 
