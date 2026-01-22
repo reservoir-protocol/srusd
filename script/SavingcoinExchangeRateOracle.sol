@@ -1,24 +1,44 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-/// @title Savingcoin Exchange Rate Oracle
-/// @notice Provides exchange rate for Savingcoin OFT wrapper to Pendle SY
-/// @dev Returns 1:1 exchange rate as the OFT wrapper is a 1:1 representation of the underlying asset
+/// @notice Savingcoin (wsrUSD) interface for exchange rate
+interface ISavingcoin {
+    /// @notice Returns the compound factor (exchange rate) in RAY format (1e27)
+    /// @dev This represents how many underlying tokens (rUSD) per share (wsrUSD)
+    /// @return Exchange rate in RAY format (needs to be converted to 1e18 for Pendle)
+    function compoundFactor() external view returns (uint256);
+}
+
+/// @title Savingcoin Exchange Rate Oracle for Pendle
+/// @notice Provides fundamental exchange rate (wsrUSD/rUSD) for Pendle SY
+/// @dev Wraps Savingcoin's compoundFactor() to Pendle's getExchangeRate() interface
+/// @dev Converts from RAY (1e27) to standard 1e18 format expected by Pendle
 contract SavingcoinExchangeRateOracle {
-    address public immutable wsrUSD;
+    /// @notice The Savingcoin (wsrUSD) contract address
+    address public immutable savingcoin;
+
+    /// @notice RAY precision used by Savingcoin (1e27)
+    uint256 private constant RAY = 1e27;
+
+    /// @notice Target precision for Pendle (1e18)
+    uint256 private constant TARGET_PRECISION = 1e18;
 
     /// @notice Constructor
-    /// @param _wsrUSD Address of the Wrapped Savings rUSD (OFT wrapper)
-    constructor(address _wsrUSD) {
-        wsrUSD = _wsrUSD;
+    /// @param _savingcoin Address of the Savingcoin (wsrUSD) contract
+    constructor(address _savingcoin) {
+        require(_savingcoin != address(0), "Invalid savingcoin address");
+        savingcoin = _savingcoin;
     }
 
-    /// @notice Get the current exchange rate
-    /// @dev Returns 1:1 exchange rate (1e18) as the OFT wrapper represents the underlying 1:1
-    /// @return exchangeRate The exchange rate in 18 decimal format (always 1e18 for 1:1)
-    function getExchangeRate() external pure returns (uint256 exchangeRate) {
-        // Return 1:1 exchange rate
-        // This means 1 wsrUSD token = 1 rUSD token
-        return 1e18;
+    /// @notice Get the exchange rate from Savingcoin's compoundFactor
+    /// @dev Converts from RAY (1e27) to standard precision (1e18)
+    /// @return The exchange rate in 18 decimals (1e18 = 1:1 ratio)
+    function getExchangeRate() external view returns (uint256) {
+        // Get compound factor in RAY format (1e27)
+        uint256 compoundFactorRay = ISavingcoin(savingcoin).compoundFactor();
+        
+        // Convert from RAY (1e27) to standard precision (1e18)
+        // This represents: how many rUSD per 1 wsrUSD
+        return compoundFactorRay / (RAY / TARGET_PRECISION);
     }
 }
